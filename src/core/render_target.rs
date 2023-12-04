@@ -150,6 +150,7 @@ impl<'a> RenderTarget<'a> {
         if data_size / T::size() as usize == 1 {
             data_size *= 4 / T::size() as usize
         }
+        data_size *= 4; // Required to make space for buffer in Firefox
         let mut bytes =
             vec![0u8; scissor_box.width as usize * scissor_box.height as usize * data_size];
         unsafe {
@@ -158,7 +159,7 @@ impl<'a> RenderTarget<'a> {
                 scissor_box.y,
                 scissor_box.width as i32,
                 scissor_box.height as i32,
-                format_from_data_type::<T>(),
+                crate::context::RGBA, //format_from_data_type::<T>(),
                 T::data_type(),
                 crate::context::PixelPackData::Slice(&mut bytes),
             );
