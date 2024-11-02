@@ -2,7 +2,7 @@
 use crate::core::{Context, CoreError, Viewport};
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
-use winit::window::WindowBuilder;
+use winit::window::Window as WinitWindow;
 use winit::*;
 
 mod settings;
@@ -97,7 +97,7 @@ impl Window {
     ) -> Result<Self, WindowError> {
         #[cfg(not(target_arch = "wasm32"))]
         let window_builder = {
-            let window_builder = WindowBuilder::new()
+            let window_builder = WinitWindow::default_attributes()
                 .with_title(&window_settings.title)
                 .with_min_inner_size(dpi::LogicalSize::new(
                     window_settings.min_size.0,
@@ -123,7 +123,7 @@ impl Window {
         #[cfg(target_arch = "wasm32")]
         let window_builder = {
             use wasm_bindgen::JsCast;
-            use winit::{dpi::LogicalSize, platform::web::WindowBuilderExtWebSys};
+            use winit::{dpi::LogicalSize, platform::web::WindowAttributesExtWebSys};
 
             let canvas = if let Some(canvas) = window_settings.canvas {
                 canvas
@@ -157,10 +157,10 @@ impl Window {
                     )
                 });
 
-            WindowBuilder::new()
+            WinitWindow::default_attributes()
                 .with_title(window_settings.title)
                 .with_canvas(Some(canvas))
-                .with_inner_size(inner_size)
+//                .with_inner_size(inner_size)
                 .with_prevent_default(true)
         };
 
