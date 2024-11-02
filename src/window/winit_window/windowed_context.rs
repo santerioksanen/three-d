@@ -37,6 +37,7 @@ mod inner {
 
             // get webgl context and verify extensions
             let webgl_context = canvas
+                .expect("Unable to create canvas")
                 .get_context_with_context_options(
                     "webgl2",
                     &serde_wasm_bindgen::to_value(&ContextOpt {
