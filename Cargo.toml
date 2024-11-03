@@ -47,7 +47,7 @@ wasm-bindgen = {version = "0.2", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 serde-wasm-bindgen = { version = "0.6", optional = true }
 web-sys = { version = "0.3", features = ['Document', 'HtmlCollection', 'HtmlCanvasElement', 'Window'], optional = true }
-instant = "0.1.12"
+instant = { version = "0.1", features = [ "wasm-bindgen" ] }
 
 [dev-dependencies]
 rand = "0.7"
