@@ -225,6 +225,8 @@ impl Window {
             app: Application {
                 gl: gl?,
                 frame_input_generator,
+                maximized,
+                callback: None,
             }
         })
     }
@@ -238,6 +240,7 @@ impl Window {
 //            frame_input_generator: frame_input_generator,
 //            window: &self,
 //        };
+        self.app.callback = Some(Box::new(callback));
         self.event_loop
             .run_app(&mut self.app);
 //            .run_app(move |event, _, control_flow| match event {
@@ -347,6 +350,8 @@ impl Window {
 pub struct Application {
     frame_input_generator: FrameInputGenerator,
     gl: WindowedContext,
+    maximized: bool,
+    callback: Option<Box<dyn FnMut(FrameInput) -> FrameOutput>>,
 }
 
 impl winit::application::ApplicationHandler for Application {
@@ -418,6 +423,41 @@ impl winit::application::ApplicationHandler for Application {
         match event {
             WindowEvent::Resized(physical_size) => {
                 self.gl.resize(physical_size);
+            }
+            WindowEvent::RedrawRequested => {
+                #[cfg(target_arch = "wasm32")]
+//                if self.maximized || option_env!("THREE_D_SCREENSHOT").is_some() {
+//                    use winit::platform::web::WindowExtWebSys;
+//
+//                    let html_canvas = self.window.canvas();
+//                    let browser_window = html_canvas
+//                        .owner_document()
+//                        .and_then(|doc| doc.default_view())
+//                        .or_else(web_sys::window)
+//                        .unwrap();
+//
+//                    self.window.set_inner_size(dpi::LogicalSize {
+//                        width: browser_window.inner_width().unwrap().as_f64().unwrap(),
+//                        height: browser_window.inner_height().unwrap().as_f64().unwrap(),
+//                    });
+//                }
+
+                let frame_input = self.frame_input_generator.generate(&self.gl);
+                let frame_output = self.callback.as_mut().unwrap()(frame_input);
+                if frame_output.exit {
+                    return; //event_loop.set_control_flow(ControlFlow); = ControlFlow::Exit;
+                } else {
+                    if frame_output.swap_buffers && option_env!("THREE_D_SCREENSHOT").is_none()
+                    {
+                        self.gl.swap_buffers().unwrap();
+                    }
+                    if frame_output.wait_next_event {
+                        event_loop.set_control_flow(ControlFlow::Wait);
+                    } else {
+                        event_loop.set_control_flow(ControlFlow::Poll);
+//                        self.window.request_redraw();
+                    }
+                }
             }
 //                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
 //                        self.gl.resize(**new_inner_size);
