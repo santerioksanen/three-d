@@ -144,21 +144,49 @@ impl Window {
                 .map_err(|e| WindowError::CanvasConvertFailed(format!("{:?}", e)))?
             };
 
+            use log::info;
+            info!("Logging from create window!");
+
             let inner_size = window_settings
                 .initial_size
                 .or(window_settings.max_size)
                 .map(|(width, height)| LogicalSize::new(width as f64, height as f64))
                 .unwrap_or_else(|| {
-                    let browser_window = canvas
-                        .owner_document()
-                        .and_then(|doc| doc.default_view())
-                        .or_else(web_sys::window)
+                    //let browser_window = canvas
+                    //    .owner_document()
+                    //    .and_then(|doc| doc.default_view())
+                    //    .or_else(web_sys::window)
+                    //    .unwrap();
+                    let container = canvas.parent_element().expect("Couldn't get parent element");
+                    let computed_style = web_sys::window()
+                        .expect("Could not get window")
+                        .get_computed_style(&container)
+                        .expect("Could not get computed style")
                         .unwrap();
+                    
+                    let width = computed_style
+                        .get_property_value("width")
+                        .expect("Could not get width")
+                        .trim()
+                        .replace("px", "")
+                        .parse::<f64>()
+                        .expect("Failed to parse width");
+                    
+                    let height = computed_style
+                        .get_property_value("height")
+                        .expect("Could not get height")
+                        .trim()
+                        .replace("px", "")
+                        .parse::<f64>()
+                        .expect("Failed to parse height");
+
                     LogicalSize::new(
-                        browser_window.inner_width().unwrap().as_f64().unwrap(),
-                        browser_window.inner_height().unwrap().as_f64().unwrap(),
+                        width,
+                        height,
                     )
                 });
+
+            info!("Inner size: {:?}", inner_size);
 
             WinitWindow::default_attributes()
                 .with_title(window_settings.title)
@@ -218,7 +246,7 @@ impl Window {
             app: Application {
                 gl: gl?,
                 frame_input_generator,
-                maximized,
+                maximized: false,
                 callback: None,
                 window: winit_window,
                 close_requested: false,
@@ -336,8 +364,10 @@ impl winit::application::ApplicationHandler for Application {
 //                self.window.request_redraw();
 //            }
         self.frame_input_generator.handle_winit_window_event(&mut event);
+        use log::info;
         match event {
             WindowEvent::Resized(physical_size) => {
+                info!("Resized to: {:?}", physical_size);
                 self.gl.resize(physical_size);
             }
             WindowEvent::RedrawRequested => {
