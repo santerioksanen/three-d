@@ -160,7 +160,7 @@ impl Window {
             WindowBuilder::new()
                 .with_title(window_settings.title)
                 .with_canvas(Some(canvas))
-                .with_inner_size(inner_size)
+//                .with_inner_size(inner_size)
                 .with_prevent_default(true)
         };
 
@@ -170,7 +170,7 @@ impl Window {
             winit_window,
             event_loop,
             window_settings.surface_settings,
-            window_settings.max_size.is_none() && window_settings.initial_size.is_none(),
+            false,//window_settings.max_size.is_none() && window_settings.initial_size.is_none(),
         )
     }
 
@@ -242,26 +242,26 @@ impl Window {
                 }
                 Event::RedrawRequested(_) => {
                     #[cfg(target_arch = "wasm32")]
-                    if self.maximized || option_env!("THREE_D_SCREENSHOT").is_some() {
-                        use winit::platform::web::WindowExtWebSys;
-
-                        let html_canvas = self.window.canvas();
-                        let browser_window = html_canvas
-                            .owner_document()
-                            .and_then(|doc| doc.default_view())
-                            .or_else(web_sys::window)
-                            .unwrap();
-
-                        self.window.set_inner_size(dpi::LogicalSize {
-                            width: browser_window.inner_width().unwrap().as_f64().unwrap(),
-                            height: browser_window.inner_height().unwrap().as_f64().unwrap(),
-                        });
-                    }
+//                    if self.maximized || option_env!("THREE_D_SCREENSHOT").is_some() {
+//                        use winit::platform::web::WindowExtWebSys;
+//
+//                        let html_canvas = self.window.canvas();
+//                        let browser_window = html_canvas
+//                            .owner_document()
+//                            .and_then(|doc| doc.default_view())
+//                            .or_else(web_sys::window)
+//                            .unwrap();
+//
+//                        self.window.set_inner_size(dpi::LogicalSize {
+//                            width: browser_window.inner_width().unwrap().as_f64().unwrap(),
+//                            height: browser_window.inner_height().unwrap().as_f64().unwrap(),
+//                        });
+//                    }
 
                     let frame_input = frame_input_generator.generate(&self.gl);
                     let frame_output = callback(frame_input);
                     if frame_output.exit {
-                        *control_flow = ControlFlow::Exit;
+//                        *control_flow = ControlFlow::Exit;
                     } else {
                         if frame_output.swap_buffers && option_env!("THREE_D_SCREENSHOT").is_none()
                         {
@@ -281,10 +281,10 @@ impl Window {
                         WindowEvent::Resized(physical_size) => {
                             self.gl.resize(*physical_size);
                         }
-                        WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                            self.gl.resize(**new_inner_size);
-                        }
-                        WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
+//                        WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+//                            self.gl.resize(**new_inner_size);
+//                        }
+//                        WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
                         _ => (),
                     }
                 }
